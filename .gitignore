@@ -3,9 +3,4 @@ data/output.csv
 data/report.json
 config.toml
 logs/service.log
-data/input.csv
-data/test-topic-1_1773389849.csv
-data/test-topic-1_1773389849 copy.csv
-data/test-topic-1_1773393874.csv
-data/test-topic-1_1773393925.csv
-data/test-topic-2_1773393925.csv
+data/*
