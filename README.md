@@ -157,17 +157,40 @@ auto_commit = true
 
 #### Kafka安全配置
 
+详细的Kafka安全配置示例请参考 [KAFKA_SECURITY_CONFIG.md](./KAFKA_SECURITY_CONFIG.md)
+
+**常用配置示例：**
+
+**无加密（开发环境）：**
 ```toml
 [data.kafka.security]
-sasl_username = ""
-sasl_password = ""
-ssl_ca_location = ""
-ssl_key_location = ""
-ssl_certificate_location = ""
-security_protocol = "SASL_SSL"  # PLAINTEXT, SASL_SSL, SSL
-sasl_mechanism = "PLAIN"        # PLAIN, SCRAM-SHA-256, SCRAM-SHA-512
-ssl_endpoint_identification_algorithm = "https"  # none, https
+security_protocol = "PLAINTEXT"
 ```
+
+**SASL_SSL + PLAIN认证（生产环境常用）：**
+```toml
+[data.kafka.security]
+security_protocol = "SASL_SSL"
+sasl_mechanism = "PLAIN"
+sasl_username = "your_username"
+sasl_password = "your_password"
+ssl_ca_location = "/path/to/ca.pem"
+ssl_endpoint_identification_algorithm = "https"
+```
+
+**参数说明：**
+- `security_protocol`: 安全协议
+  - `PLAINTEXT` - 无加密（开发环境）
+  - `SASL_SSL` - SASL认证 + SSL加密（生产环境推荐）
+  - `SSL` - 仅SSL加密
+- `sasl_mechanism`: SASL认证机制（SASL_SSL时有效）
+  - `PLAIN` - 明文认证
+  - `SCRAM-SHA-256` - SHA-256哈希认证
+  - `SCRAM-SHA-512` - SHA-512哈希认证
+- `ssl_ca_location`: CA证书路径
+- `ssl_endpoint_identification_algorithm`: SSL主机名验证
+  - `none` - 跳过验证（自签名证书）
+  - `https` - 验证主机名（推荐）
 
 ### 清洗规则配置
 
