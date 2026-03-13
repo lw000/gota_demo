@@ -1,0 +1,97 @@
+# 服务配置
+[service]
+name = "DataCleaningService"
+display_name = "数据清洗服务"
+description = "Kafka数据清洗服务"
+
+# 数据源配置
+[data]
+output_dir = "./data"
+report_path = "./data/report.json"
+max_rows_per_file = 1000000
+
+# CSV数据源（已废弃，仅保留Kafka）
+[data.csv]
+enabled = false
+input_path = "./data/input.csv"
+
+# Kafka数据源
+[data.kafka]
+enabled = true
+brokers = ["127.0.0.1:9092"]
+topics = ["test-topic-1","test-topic-2","test-topic-3"]
+consumer_group = "data_cleaning_group"
+batch_size = 100
+batch_timeout_ms = 5000
+auto_commit = true
+
+# Kafka安全配置
+[data.kafka.security]
+sasl_username = ""
+sasl_password = ""
+ssl_ca_location = ""
+ssl_key_location = ""
+ssl_certificate_location = ""
+# 安全协议选项: PLAINTEXT(无加密), SASL_SSL(SASL认证+SSL加密), SSL(仅SSL加密)
+security_protocol = ""
+# SASL认证机制: PLAIN, SCRAM-SHA-256, SCRAM-SHA-512
+sasl_mechanism = ""
+# SSL主机名验证: none(跳过验证), https(验证主机名)
+ssl_endpoint_identification_algorithm = ""
+
+# Kafka输出配置（可选）
+[data.kafka_output]
+enabled = false
+brokers = ["localhost:9092"]
+topics = ["cleaned_data"]
+consumer_group = "data_output_group"
+batch_size = 100
+batch_timeout_ms = 5000
+auto_commit = true
+
+# Kafka输出安全配置
+[data.kafka_output.security]
+sasl_username = ""
+sasl_password = ""
+ssl_ca_location = ""
+ssl_key_location = ""
+ssl_certificate_location = ""
+# 安全协议选项: PLAINTEXT, SASL_SSL, SSL
+security_protocol = ""
+# SASL认证机制: PLAIN, SCRAM-SHA-256, SCRAM-SHA-512
+sasl_mechanism = ""
+# SSL主机名验证: none, https
+ssl_endpoint_identification_algorithm = ""
+
+# 清洗规则配置
+[cleaning_rules]
+remove_duplicates = true
+handle_missing_values = "delete"  # delete|fill_mean|fill_zero|fill_custom
+date_format = "2006-01-02"
+string_normalization = true
+
+# 数值范围校验（默认规则，适用于所有主题）
+[[cleaning_rules.numeric_ranges]]
+column = "age"
+min = 0
+max = 120
+
+# 主题专用数值范围校验（覆盖默认规则）
+[data.kafka.topic_rules]
+[data.kafka.topic_rules.test-topic-1]
+[[data.kafka.topic_rules.test-topic-1.numeric_ranges]]
+column = "TAG_001"
+min = 0
+max = 1000
+[[data.kafka.topic_rules.test-topic-1.numeric_ranges]]
+column = "TAG_002"
+min = 0.0
+max = 100.0
+
+# 日志配置
+[logging]
+level = "debug"  # debug|info|warn|error
+file_path = "./logs/service.log"
+max_size_mb = 100
+max_backups = 3
+max_age_days = 30
