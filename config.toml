@@ -1,0 +1,74 @@
+# 服务配置
+[service]
+name = "DataCleaningService"
+display_name = "数据清洗服务"
+description = "CSV数据清洗服务"
+
+# 数据源配置
+[data]
+output_path = "./data/output.csv"
+report_path = "./data/report.json"
+
+# CSV数据源
+[data.csv]
+enabled = true
+input_path = "./data/input.csv"
+
+# Kafka数据源
+[data.kafka]
+enabled = false
+brokers = ["localhost:9092"]
+topic = "raw_data"
+consumer_group = "data_cleaning_group"
+batch_size = 100
+batch_timeout_ms = 5000
+auto_commit = true
+
+# Kafka安全配置
+[data.kafka.security]
+sasl_username = ""
+sasl_password = ""
+ssl_ca_location = ""
+ssl_key_location = ""
+ssl_certificate_location = ""
+security_protocol = ""  # PLAINTEXT, SASL_SSL, SSL
+sasl_mechanism = ""     # PLAIN, SCRAM-SHA-256, SCRAM-SHA-512
+ssl_endpoint_identification_algorithm = ""  # none, https
+
+# Kafka输出配置（可选）
+[data.kafka_output]
+enabled = false
+brokers = ["localhost:9092"]
+topic = "cleaned_data"
+
+# Kafka输出安全配置
+[data.kafka_output.security]
+sasl_username = ""
+sasl_password = ""
+ssl_ca_location = ""
+ssl_key_location = ""
+ssl_certificate_location = ""
+security_protocol = ""
+sasl_mechanism = ""
+ssl_endpoint_identification_algorithm = ""
+
+# 清洗规则配置
+[cleaning_rules]
+remove_duplicates = true
+handle_missing_values = "delete"  # delete|fill_mean|fill_zero|fill_custom
+date_format = "2006-01-02"
+string_normalization = true
+
+# 数值范围校验
+[[cleaning_rules.numeric_ranges]]
+column = "age"
+min = 0
+max = 120
+
+# 日志配置
+[logging]
+level = "info"  # debug|info|warn|error
+file_path = "./logs/service.log"
+max_size_mb = 100
+max_backups = 3
+max_age_days = 30

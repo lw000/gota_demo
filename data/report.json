@@ -1,0 +1,132 @@
+{
+  "timestamp": "2026-03-13T14:08:31.1442705+08:00",
+  "data_source": "csv",
+  "data_source_info": {
+    "file_path": "./data/input.csv",
+    "file_size": 1215,
+    "modified_time": "2026-03-13T11:53:40.604742+08:00",
+    "type": "csv"
+  },
+  "cleaning_summary": {
+    "original_rows": 20,
+    "cleaned_rows": 18,
+    "removed_rows": 2,
+    "original_columns": 7,
+    "cleaned_columns": 7
+  },
+  "operations_performed": [
+    {
+      "operation": "remove_duplicates",
+      "affected_rows": 0,
+      "description": "去除重复行",
+      "timestamp": "2026-03-13T14:08:31.1409253+08:00"
+    },
+    {
+      "operation": "delete_missing_values",
+      "affected_rows": 1,
+      "description": "删除包含缺失值的行",
+      "timestamp": "2026-03-13T14:08:31.1422733+08:00"
+    },
+    {
+      "operation": "validate_numeric_ranges",
+      "affected_rows": 1,
+      "description": "验证数值范围",
+      "timestamp": "2026-03-13T14:08:31.1422733+08:00"
+    },
+    {
+      "operation": "normalize_strings",
+      "affected_rows": 18,
+      "description": "字符串规范化（去空格、转小写）",
+      "timestamp": "2026-03-13T14:08:31.1422733+08:00"
+    }
+  ],
+  "data_quality": {
+    "completeness": 90,
+    "data_loss": 10
+  },
+  "statistics": {
+    "processing_time_ms": 5
+  },
+  "columns_info": [
+    {
+      "name": "id",
+      "type": "int",
+      "null_count": 0,
+      "unique_count": 18,
+      "statistics": {
+        "count": 18,
+        "max": 20,
+        "mean": 10.333333333333334,
+        "min": 1
+      }
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "null_count": 0,
+      "unique_count": 15,
+      "statistics": {
+        "avg_length": 6.833333333333333,
+        "count": 18,
+        "max_length": 9
+      }
+    },
+    {
+      "name": "age",
+      "type": "int",
+      "null_count": 0,
+      "unique_count": 15,
+      "statistics": {
+        "count": 18,
+        "max": 50,
+        "mean": 31.88888888888889,
+        "min": 22
+      }
+    },
+    {
+      "name": "email",
+      "type": "string",
+      "null_count": 0,
+      "unique_count": 14,
+      "statistics": {
+        "avg_length": 17.444444444444443,
+        "count": 18,
+        "max_length": 22
+      }
+    },
+    {
+      "name": "salary",
+      "type": "int",
+      "null_count": 0,
+      "unique_count": 15,
+      "statistics": {
+        "count": 18,
+        "max": 30000,
+        "mean": 13333.333333333334,
+        "min": 7000
+      }
+    },
+    {
+      "name": "department",
+      "type": "string",
+      "null_count": 0,
+      "unique_count": 3,
+      "statistics": {
+        "avg_length": 9,
+        "count": 18,
+        "max_length": 9
+      }
+    },
+    {
+      "name": "join_date",
+      "type": "string",
+      "null_count": 0,
+      "unique_count": 15,
+      "statistics": {
+        "avg_length": 9.444444444444445,
+        "count": 18,
+        "max_length": 10
+      }
+    }
+  ]
+}

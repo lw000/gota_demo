@@ -1,0 +1,177 @@
+{"level":"INFO","time":"2026-03-13T12:08:50.821+0800","caller":"service/main.go:66","msg":"========================================"}
+{"level":"INFO","time":"2026-03-13T12:08:50.823+0800","caller":"service/main.go:67","msg":"数据清洗服务启动","name":"DataCleaningService","version":"1.0.0","config":"D:\\work\\go_work\\src\\gota_demo\\config.toml"}
+{"level":"INFO","time":"2026-03-13T12:08:50.823+0800","caller":"service/main.go:72","msg":"========================================"}
+{"level":"INFO","time":"2026-03-13T12:08:50.836+0800","caller":"service/cleaning_service.go:41","msg":"初始化数据清洗服务","name":"DataCleaningService"}
+{"level":"INFO","time":"2026-03-13T12:08:50.837+0800","caller":"service/cleaning_service.go:72","msg":"数据清洗服务初始化完成"}
+{"level":"INFO","time":"2026-03-13T12:08:50.838+0800","caller":"service/cleaning_service.go:78","msg":"启动数据清洗服务"}
+{"level":"INFO","time":"2026-03-13T12:08:50.838+0800","caller":"service/cleaning_service.go:112","msg":"开始执行数据清洗任务"}
+{"level":"INFO","time":"2026-03-13T12:08:50.838+0800","caller":"service/cleaning_service.go:115","msg":"步骤1: 加载数据"}
+{"level":"INFO","time":"2026-03-13T12:08:50.838+0800","caller":"loader/csv_loader.go:36","msg":"开始加载CSV文件","file":"./data/input.csv"}
+{"level":"INFO","time":"2026-03-13T12:08:50.838+0800","caller":"loader/csv_loader.go:54","msg":"CSV文件加载完成","rows":20,"columns":7,"duration":0.0005394}
+{"level":"INFO","time":"2026-03-13T12:08:50.838+0800","caller":"service/cleaning_service.go:122","msg":"数据加载成功","rows":20,"columns":7}
+{"level":"INFO","time":"2026-03-13T12:08:50.838+0800","caller":"service/cleaning_service.go:128","msg":"步骤2: 清洗数据"}
+{"level":"INFO","time":"2026-03-13T12:08:50.838+0800","caller":"cleaner/data_cleaner.go:43","msg":"开始数据清洗","original_rows":20,"columns":7}
+{"level":"INFO","time":"2026-03-13T12:08:50.838+0800","caller":"cleaner/data_cleaner.go:102","msg":"执行去重操作"}
+{"level":"INFO","time":"2026-03-13T12:08:50.839+0800","caller":"cleaner/data_cleaner.go:134","msg":"去重完成","removed_rows":0,"duration":0.0006351}
+{"level":"INFO","time":"2026-03-13T12:08:50.839+0800","caller":"cleaner/data_cleaner.go:177","msg":"删除包含缺失值的行"}
+{"level":"INFO","time":"2026-03-13T12:08:50.839+0800","caller":"cleaner/data_cleaner.go:211","msg":"删除缺失值完成","removed_rows":1,"duration":0}
+{"level":"INFO","time":"2026-03-13T12:08:50.839+0800","caller":"cleaner/data_cleaner.go:256","msg":"验证数值范围","ranges_count":1}
+{"level":"INFO","time":"2026-03-13T12:08:50.839+0800","caller":"cleaner/data_cleaner.go:326","msg":"数值范围验证完成","removed_rows":1,"duration":0.0005374}
+{"level":"INFO","time":"2026-03-13T12:08:50.839+0800","caller":"cleaner/data_cleaner.go:338","msg":"规范化字符串"}
+{"level":"INFO","time":"2026-03-13T12:08:50.839+0800","caller":"cleaner/data_cleaner.go:381","msg":"字符串规范化完成","duration":0}
+{"level":"INFO","time":"2026-03-13T12:08:50.839+0800","caller":"cleaner/data_cleaner.go:88","msg":"数据清洗完成","cleaned_rows":18,"removed_rows":2,"duration":0.0011725}
+{"level":"INFO","time":"2026-03-13T12:08:50.839+0800","caller":"service/cleaning_service.go:135","msg":"数据清洗成功","cleaned_rows":18,"removed_rows":2}
+{"level":"INFO","time":"2026-03-13T12:08:50.839+0800","caller":"service/cleaning_service.go:141","msg":"步骤3: 保存清洗后的数据"}
+{"level":"INFO","time":"2026-03-13T12:08:50.839+0800","caller":"service/cleaning_service.go:216","msg":"保存清洗后的数据","path":"./data/output.csv"}
+{"level":"INFO","time":"2026-03-13T12:08:50.842+0800","caller":"service/cleaning_service.go:237","msg":"数据保存成功"}
+{"level":"INFO","time":"2026-03-13T12:08:50.842+0800","caller":"service/cleaning_service.go:156","msg":"步骤5: 生成清洗报告"}
+{"level":"INFO","time":"2026-03-13T12:08:50.842+0800","caller":"reporter/report_generator.go:73","msg":"开始生成清洗报告"}
+{"level":"INFO","time":"2026-03-13T12:08:50.842+0800","caller":"reporter/report_generator.go:120","msg":"清洗报告生成完成","report_path":"./data/report.json"}
+{"level":"INFO","time":"2026-03-13T12:08:50.842+0800","caller":"reporter/report_generator.go:265","msg":"保存清洗报告","path":"./data/report.json"}
+{"level":"INFO","time":"2026-03-13T12:08:50.844+0800","caller":"reporter/report_generator.go:285","msg":"清洗报告保存成功"}
+{"level":"INFO","time":"2026-03-13T12:08:50.844+0800","caller":"service/cleaning_service.go:179","msg":"数据清洗任务完成","total_time":0.0037937}
+{"level":"INFO","time":"2026-03-13T12:08:50.844+0800","caller":"service/cleaning_service.go:185","msg":"CSV模式下任务完成，退出服务"}
+{"level":"INFO","time":"2026-03-13T12:08:50.844+0800","caller":"service/cleaning_service.go:88","msg":"停止数据清洗服务"}
+{"level":"INFO","time":"2026-03-13T12:08:50.844+0800","caller":"service/cleaning_service.go:104","msg":"数据清洗服务已停止"}
+{"level":"INFO","time":"2026-03-13T12:55:34.789+0800","caller":"service/main.go:66","msg":"========================================"}
+{"level":"INFO","time":"2026-03-13T12:55:34.789+0800","caller":"service/main.go:67","msg":"数据清洗服务启动","name":"DataCleaningService","version":"1.0.0","config":"d:\\work\\go_work\\src\\gota_demo\\config.toml"}
+{"level":"INFO","time":"2026-03-13T12:55:34.789+0800","caller":"service/main.go:72","msg":"========================================"}
+{"level":"INFO","time":"2026-03-13T12:55:34.802+0800","caller":"service/cleaning_service.go:41","msg":"初始化数据清洗服务","name":"DataCleaningService"}
+{"level":"INFO","time":"2026-03-13T12:55:34.803+0800","caller":"service/cleaning_service.go:72","msg":"数据清洗服务初始化完成"}
+{"level":"INFO","time":"2026-03-13T12:55:34.803+0800","caller":"service/cleaning_service.go:78","msg":"启动数据清洗服务"}
+{"level":"INFO","time":"2026-03-13T12:55:34.803+0800","caller":"service/cleaning_service.go:112","msg":"开始执行数据清洗任务"}
+{"level":"INFO","time":"2026-03-13T12:55:34.803+0800","caller":"service/cleaning_service.go:115","msg":"步骤1: 加载数据"}
+{"level":"INFO","time":"2026-03-13T12:55:34.803+0800","caller":"loader/csv_loader.go:36","msg":"开始加载CSV文件","file":"./data/input.csv"}
+{"level":"INFO","time":"2026-03-13T12:55:34.803+0800","caller":"loader/csv_loader.go:54","msg":"CSV文件加载完成","rows":20,"columns":7,"duration":0}
+{"level":"INFO","time":"2026-03-13T12:55:34.803+0800","caller":"service/cleaning_service.go:122","msg":"数据加载成功","rows":20,"columns":7}
+{"level":"INFO","time":"2026-03-13T12:55:34.803+0800","caller":"service/cleaning_service.go:128","msg":"步骤2: 清洗数据"}
+{"level":"INFO","time":"2026-03-13T12:55:34.803+0800","caller":"cleaner/data_cleaner.go:43","msg":"开始数据清洗","original_rows":20,"columns":7}
+{"level":"INFO","time":"2026-03-13T12:55:34.803+0800","caller":"cleaner/data_cleaner.go:102","msg":"执行去重操作"}
+{"level":"INFO","time":"2026-03-13T12:55:34.804+0800","caller":"cleaner/data_cleaner.go:134","msg":"去重完成","removed_rows":0,"duration":0.0005481}
+{"level":"INFO","time":"2026-03-13T12:55:34.804+0800","caller":"cleaner/data_cleaner.go:177","msg":"删除包含缺失值的行"}
+{"level":"INFO","time":"2026-03-13T12:55:34.804+0800","caller":"cleaner/data_cleaner.go:211","msg":"删除缺失值完成","removed_rows":1,"duration":0}
+{"level":"INFO","time":"2026-03-13T12:55:34.804+0800","caller":"cleaner/data_cleaner.go:256","msg":"验证数值范围","ranges_count":1}
+{"level":"INFO","time":"2026-03-13T12:55:34.804+0800","caller":"cleaner/data_cleaner.go:326","msg":"数值范围验证完成","removed_rows":1,"duration":0}
+{"level":"INFO","time":"2026-03-13T12:55:34.804+0800","caller":"cleaner/data_cleaner.go:338","msg":"规范化字符串"}
+{"level":"INFO","time":"2026-03-13T12:55:34.804+0800","caller":"cleaner/data_cleaner.go:381","msg":"字符串规范化完成","duration":0}
+{"level":"INFO","time":"2026-03-13T12:55:34.804+0800","caller":"cleaner/data_cleaner.go:88","msg":"数据清洗完成","cleaned_rows":18,"removed_rows":2,"duration":0.0005481}
+{"level":"INFO","time":"2026-03-13T12:55:34.804+0800","caller":"service/cleaning_service.go:135","msg":"数据清洗成功","cleaned_rows":18,"removed_rows":2}
+{"level":"INFO","time":"2026-03-13T12:55:34.804+0800","caller":"service/cleaning_service.go:141","msg":"步骤3: 保存清洗后的数据"}
+{"level":"INFO","time":"2026-03-13T12:55:34.804+0800","caller":"service/cleaning_service.go:216","msg":"保存清洗后的数据","path":"./data/output.csv"}
+{"level":"INFO","time":"2026-03-13T12:55:34.805+0800","caller":"service/cleaning_service.go:237","msg":"数据保存成功"}
+{"level":"INFO","time":"2026-03-13T12:55:34.805+0800","caller":"service/cleaning_service.go:156","msg":"步骤5: 生成清洗报告"}
+{"level":"INFO","time":"2026-03-13T12:55:34.805+0800","caller":"reporter/report_generator.go:73","msg":"开始生成清洗报告"}
+{"level":"INFO","time":"2026-03-13T12:55:34.805+0800","caller":"reporter/report_generator.go:120","msg":"清洗报告生成完成","report_path":"./data/report.json"}
+{"level":"INFO","time":"2026-03-13T12:55:34.805+0800","caller":"reporter/report_generator.go:265","msg":"保存清洗报告","path":"./data/report.json"}
+{"level":"INFO","time":"2026-03-13T12:55:34.806+0800","caller":"reporter/report_generator.go:285","msg":"清洗报告保存成功"}
+{"level":"INFO","time":"2026-03-13T12:55:34.806+0800","caller":"service/cleaning_service.go:179","msg":"数据清洗任务完成","total_time":0.0015995}
+{"level":"INFO","time":"2026-03-13T12:55:34.806+0800","caller":"service/cleaning_service.go:185","msg":"CSV模式下任务完成，退出服务"}
+{"level":"INFO","time":"2026-03-13T12:55:34.806+0800","caller":"service/cleaning_service.go:88","msg":"停止数据清洗服务"}
+{"level":"INFO","time":"2026-03-13T12:55:34.806+0800","caller":"service/cleaning_service.go:104","msg":"数据清洗服务已停止"}
+{"level":"INFO","time":"2026-03-13T12:56:15.866+0800","caller":"service/main.go:66","msg":"========================================"}
+{"level":"INFO","time":"2026-03-13T12:56:15.867+0800","caller":"service/main.go:67","msg":"数据清洗服务启动","name":"DataCleaningService","version":"1.0.0","config":"D:\\work\\go_work\\src\\gota_demo\\config.toml"}
+{"level":"INFO","time":"2026-03-13T12:56:15.867+0800","caller":"service/main.go:72","msg":"========================================"}
+{"level":"INFO","time":"2026-03-13T12:56:15.874+0800","caller":"service/cleaning_service.go:41","msg":"初始化数据清洗服务","name":"DataCleaningService"}
+{"level":"INFO","time":"2026-03-13T12:56:15.874+0800","caller":"service/cleaning_service.go:72","msg":"数据清洗服务初始化完成"}
+{"level":"INFO","time":"2026-03-13T12:56:15.875+0800","caller":"service/cleaning_service.go:78","msg":"启动数据清洗服务"}
+{"level":"INFO","time":"2026-03-13T12:56:15.875+0800","caller":"service/cleaning_service.go:112","msg":"开始执行数据清洗任务"}
+{"level":"INFO","time":"2026-03-13T12:56:15.875+0800","caller":"service/cleaning_service.go:115","msg":"步骤1: 加载数据"}
+{"level":"INFO","time":"2026-03-13T12:56:15.875+0800","caller":"loader/csv_loader.go:36","msg":"开始加载CSV文件","file":"./data/input.csv"}
+{"level":"INFO","time":"2026-03-13T12:56:15.876+0800","caller":"loader/csv_loader.go:54","msg":"CSV文件加载完成","rows":20,"columns":7,"duration":0.0005371}
+{"level":"INFO","time":"2026-03-13T12:56:15.876+0800","caller":"service/cleaning_service.go:122","msg":"数据加载成功","rows":20,"columns":7}
+{"level":"INFO","time":"2026-03-13T12:56:15.876+0800","caller":"service/cleaning_service.go:128","msg":"步骤2: 清洗数据"}
+{"level":"INFO","time":"2026-03-13T12:56:15.876+0800","caller":"cleaner/data_cleaner.go:43","msg":"开始数据清洗","original_rows":20,"columns":7}
+{"level":"INFO","time":"2026-03-13T12:56:15.876+0800","caller":"cleaner/data_cleaner.go:102","msg":"执行去重操作"}
+{"level":"INFO","time":"2026-03-13T12:56:15.876+0800","caller":"cleaner/data_cleaner.go:134","msg":"去重完成","removed_rows":0,"duration":0}
+{"level":"INFO","time":"2026-03-13T12:56:15.876+0800","caller":"cleaner/data_cleaner.go:177","msg":"删除包含缺失值的行"}
+{"level":"INFO","time":"2026-03-13T12:56:15.876+0800","caller":"cleaner/data_cleaner.go:211","msg":"删除缺失值完成","removed_rows":1,"duration":0}
+{"level":"INFO","time":"2026-03-13T12:56:15.876+0800","caller":"cleaner/data_cleaner.go:256","msg":"验证数值范围","ranges_count":1}
+{"level":"INFO","time":"2026-03-13T12:56:15.877+0800","caller":"cleaner/data_cleaner.go:326","msg":"数值范围验证完成","removed_rows":1,"duration":0.0010115}
+{"level":"INFO","time":"2026-03-13T12:56:15.877+0800","caller":"cleaner/data_cleaner.go:338","msg":"规范化字符串"}
+{"level":"INFO","time":"2026-03-13T12:56:15.877+0800","caller":"cleaner/data_cleaner.go:381","msg":"字符串规范化完成","duration":0}
+{"level":"INFO","time":"2026-03-13T12:56:15.877+0800","caller":"cleaner/data_cleaner.go:88","msg":"数据清洗完成","cleaned_rows":18,"removed_rows":2,"duration":0.0010115}
+{"level":"INFO","time":"2026-03-13T12:56:15.877+0800","caller":"service/cleaning_service.go:135","msg":"数据清洗成功","cleaned_rows":18,"removed_rows":2}
+{"level":"INFO","time":"2026-03-13T12:56:15.877+0800","caller":"service/cleaning_service.go:141","msg":"步骤3: 保存清洗后的数据"}
+{"level":"INFO","time":"2026-03-13T12:56:15.877+0800","caller":"service/cleaning_service.go:216","msg":"保存清洗后的数据","path":"./data/output.csv"}
+{"level":"INFO","time":"2026-03-13T12:56:15.877+0800","caller":"service/cleaning_service.go:237","msg":"数据保存成功"}
+{"level":"INFO","time":"2026-03-13T12:56:15.877+0800","caller":"service/cleaning_service.go:156","msg":"步骤5: 生成清洗报告"}
+{"level":"INFO","time":"2026-03-13T12:56:15.877+0800","caller":"reporter/report_generator.go:73","msg":"开始生成清洗报告"}
+{"level":"INFO","time":"2026-03-13T12:56:15.877+0800","caller":"reporter/report_generator.go:120","msg":"清洗报告生成完成","report_path":"./data/report.json"}
+{"level":"INFO","time":"2026-03-13T12:56:15.879+0800","caller":"reporter/report_generator.go:265","msg":"保存清洗报告","path":"./data/report.json"}
+{"level":"INFO","time":"2026-03-13T12:56:15.879+0800","caller":"reporter/report_generator.go:285","msg":"清洗报告保存成功"}
+{"level":"INFO","time":"2026-03-13T12:56:15.881+0800","caller":"service/cleaning_service.go:179","msg":"数据清洗任务完成","total_time":0.002086}
+{"level":"INFO","time":"2026-03-13T12:56:15.881+0800","caller":"service/cleaning_service.go:185","msg":"CSV模式下任务完成，退出服务"}
+{"level":"INFO","time":"2026-03-13T12:56:15.881+0800","caller":"service/cleaning_service.go:88","msg":"停止数据清洗服务"}
+{"level":"INFO","time":"2026-03-13T12:56:15.881+0800","caller":"service/cleaning_service.go:104","msg":"数据清洗服务已停止"}
+{"level":"INFO","time":"2026-03-13T12:56:52.582+0800","caller":"service/cleaning_service.go:88","msg":"停止数据清洗服务"}
+{"level":"INFO","time":"2026-03-13T14:06:41.437+0800","caller":"service/main.go:66","msg":"========================================"}
+{"level":"INFO","time":"2026-03-13T14:06:41.438+0800","caller":"service/main.go:67","msg":"数据清洗服务启动","name":"DataCleaningService","version":"1.0.0","config":"D:\\work\\go_work\\src\\gota_demo\\config.toml"}
+{"level":"INFO","time":"2026-03-13T14:06:41.438+0800","caller":"service/main.go:72","msg":"========================================"}
+{"level":"INFO","time":"2026-03-13T14:06:41.448+0800","caller":"service/cleaning_service.go:41","msg":"初始化数据清洗服务","name":"DataCleaningService"}
+{"level":"INFO","time":"2026-03-13T14:06:41.448+0800","caller":"service/cleaning_service.go:72","msg":"数据清洗服务初始化完成"}
+{"level":"INFO","time":"2026-03-13T14:06:41.448+0800","caller":"service/cleaning_service.go:78","msg":"启动数据清洗服务"}
+{"level":"INFO","time":"2026-03-13T14:06:41.448+0800","caller":"service/cleaning_service.go:112","msg":"开始执行数据清洗任务"}
+{"level":"INFO","time":"2026-03-13T14:06:41.448+0800","caller":"service/cleaning_service.go:115","msg":"步骤1: 加载数据"}
+{"level":"INFO","time":"2026-03-13T14:06:41.448+0800","caller":"loader/csv_loader.go:36","msg":"开始加载CSV文件","file":"./data/input.csv"}
+{"level":"INFO","time":"2026-03-13T14:06:41.449+0800","caller":"loader/csv_loader.go:54","msg":"CSV文件加载完成","rows":20,"columns":7,"duration":0.0009997}
+{"level":"INFO","time":"2026-03-13T14:06:41.449+0800","caller":"service/cleaning_service.go:122","msg":"数据加载成功","rows":20,"columns":7}
+{"level":"INFO","time":"2026-03-13T14:06:41.449+0800","caller":"service/cleaning_service.go:128","msg":"步骤2: 清洗数据"}
+{"level":"INFO","time":"2026-03-13T14:06:41.449+0800","caller":"cleaner/data_cleaner.go:43","msg":"开始数据清洗","original_rows":20,"columns":7}
+{"level":"INFO","time":"2026-03-13T14:06:53.629+0800","caller":"cleaner/data_cleaner.go:102","msg":"执行去重操作"}
+{"level":"INFO","time":"2026-03-13T14:06:53.630+0800","caller":"cleaner/data_cleaner.go:134","msg":"去重完成","removed_rows":0,"duration":0.0005382}
+{"level":"INFO","time":"2026-03-13T14:06:56.626+0800","caller":"cleaner/data_cleaner.go:177","msg":"删除包含缺失值的行"}
+{"level":"INFO","time":"2026-03-13T14:06:56.626+0800","caller":"cleaner/data_cleaner.go:211","msg":"删除缺失值完成","removed_rows":1,"duration":0.0005108}
+{"level":"INFO","time":"2026-03-13T14:06:58.483+0800","caller":"cleaner/data_cleaner.go:256","msg":"验证数值范围","ranges_count":1}
+{"level":"INFO","time":"2026-03-13T14:06:58.483+0800","caller":"cleaner/data_cleaner.go:326","msg":"数值范围验证完成","removed_rows":1,"duration":0.0005478}
+{"level":"INFO","time":"2026-03-13T14:06:59.934+0800","caller":"cleaner/data_cleaner.go:338","msg":"规范化字符串"}
+{"level":"INFO","time":"2026-03-13T14:06:59.935+0800","caller":"cleaner/data_cleaner.go:381","msg":"字符串规范化完成","duration":0}
+{"level":"INFO","time":"2026-03-13T14:07:02.509+0800","caller":"cleaner/data_cleaner.go:88","msg":"数据清洗完成","cleaned_rows":18,"removed_rows":2,"duration":19.9882086}
+{"level":"INFO","time":"2026-03-13T14:07:02.510+0800","caller":"service/cleaning_service.go:135","msg":"数据清洗成功","cleaned_rows":18,"removed_rows":2}
+{"level":"INFO","time":"2026-03-13T14:07:02.510+0800","caller":"service/cleaning_service.go:141","msg":"步骤3: 保存清洗后的数据"}
+{"level":"INFO","time":"2026-03-13T14:07:02.510+0800","caller":"service/cleaning_service.go:216","msg":"保存清洗后的数据","path":"./data/output.csv"}
+{"level":"INFO","time":"2026-03-13T14:07:02.511+0800","caller":"service/cleaning_service.go:237","msg":"数据保存成功"}
+{"level":"INFO","time":"2026-03-13T14:07:02.511+0800","caller":"service/cleaning_service.go:156","msg":"步骤5: 生成清洗报告"}
+{"level":"INFO","time":"2026-03-13T14:07:02.511+0800","caller":"reporter/report_generator.go:73","msg":"开始生成清洗报告"}
+{"level":"INFO","time":"2026-03-13T14:07:02.514+0800","caller":"reporter/report_generator.go:120","msg":"清洗报告生成完成","report_path":"./data/report.json"}
+{"level":"INFO","time":"2026-03-13T14:07:02.514+0800","caller":"reporter/report_generator.go:265","msg":"保存清洗报告","path":"./data/report.json"}
+{"level":"INFO","time":"2026-03-13T14:07:02.515+0800","caller":"reporter/report_generator.go:285","msg":"清洗报告保存成功"}
+{"level":"INFO","time":"2026-03-13T14:07:02.515+0800","caller":"service/cleaning_service.go:179","msg":"数据清洗任务完成","total_time":21.0630407}
+{"level":"INFO","time":"2026-03-13T14:07:02.515+0800","caller":"service/cleaning_service.go:185","msg":"CSV模式下任务完成，退出服务"}
+{"level":"INFO","time":"2026-03-13T14:07:02.515+0800","caller":"service/cleaning_service.go:88","msg":"停止数据清洗服务"}
+{"level":"INFO","time":"2026-03-13T14:07:02.515+0800","caller":"service/cleaning_service.go:104","msg":"数据清洗服务已停止"}
+{"level":"INFO","time":"2026-03-13T14:08:31.125+0800","caller":"service/main.go:66","msg":"========================================"}
+{"level":"INFO","time":"2026-03-13T14:08:31.127+0800","caller":"service/main.go:67","msg":"数据清洗服务启动","name":"DataCleaningService","version":"1.0.0","config":"D:\\work\\go_work\\src\\gota_demo\\config.toml"}
+{"level":"INFO","time":"2026-03-13T14:08:31.127+0800","caller":"service/main.go:72","msg":"========================================"}
+{"level":"INFO","time":"2026-03-13T14:08:31.137+0800","caller":"service/cleaning_service.go:41","msg":"初始化数据清洗服务","name":"DataCleaningService"}
+{"level":"INFO","time":"2026-03-13T14:08:31.138+0800","caller":"service/cleaning_service.go:72","msg":"数据清洗服务初始化完成"}
+{"level":"INFO","time":"2026-03-13T14:08:31.138+0800","caller":"service/cleaning_service.go:78","msg":"启动数据清洗服务"}
+{"level":"INFO","time":"2026-03-13T14:08:31.138+0800","caller":"service/cleaning_service.go:112","msg":"开始执行数据清洗任务"}
+{"level":"INFO","time":"2026-03-13T14:08:31.139+0800","caller":"service/cleaning_service.go:115","msg":"步骤1: 加载数据"}
+{"level":"INFO","time":"2026-03-13T14:08:31.139+0800","caller":"loader/csv_loader.go:36","msg":"开始加载CSV文件","file":"./data/input.csv"}
+{"level":"INFO","time":"2026-03-13T14:08:31.140+0800","caller":"loader/csv_loader.go:54","msg":"CSV文件加载完成","rows":20,"columns":7,"duration":0.0010013}
+{"level":"INFO","time":"2026-03-13T14:08:31.140+0800","caller":"service/cleaning_service.go:122","msg":"数据加载成功","rows":20,"columns":7}
+{"level":"INFO","time":"2026-03-13T14:08:31.140+0800","caller":"service/cleaning_service.go:128","msg":"步骤2: 清洗数据"}
+{"level":"INFO","time":"2026-03-13T14:08:31.140+0800","caller":"cleaner/data_cleaner.go:43","msg":"开始数据清洗","original_rows":20,"columns":7}
+{"level":"INFO","time":"2026-03-13T14:08:31.140+0800","caller":"cleaner/data_cleaner.go:102","msg":"执行去重操作"}
+{"level":"INFO","time":"2026-03-13T14:08:31.142+0800","caller":"cleaner/data_cleaner.go:134","msg":"去重完成","removed_rows":0,"duration":0.001348}
+{"level":"INFO","time":"2026-03-13T14:08:31.142+0800","caller":"cleaner/data_cleaner.go:177","msg":"删除包含缺失值的行"}
+{"level":"INFO","time":"2026-03-13T14:08:31.142+0800","caller":"cleaner/data_cleaner.go:211","msg":"删除缺失值完成","removed_rows":1,"duration":0}
+{"level":"INFO","time":"2026-03-13T14:08:31.142+0800","caller":"cleaner/data_cleaner.go:256","msg":"验证数值范围","ranges_count":1}
+{"level":"INFO","time":"2026-03-13T14:08:31.142+0800","caller":"cleaner/data_cleaner.go:326","msg":"数值范围验证完成","removed_rows":1,"duration":0}
+{"level":"INFO","time":"2026-03-13T14:08:31.142+0800","caller":"cleaner/data_cleaner.go:338","msg":"规范化字符串"}
+{"level":"INFO","time":"2026-03-13T14:08:31.143+0800","caller":"cleaner/data_cleaner.go:381","msg":"字符串规范化完成","duration":0.0009985}
+{"level":"INFO","time":"2026-03-13T14:08:31.143+0800","caller":"cleaner/data_cleaner.go:88","msg":"数据清洗完成","cleaned_rows":18,"removed_rows":2,"duration":0.0023465}
+{"level":"INFO","time":"2026-03-13T14:08:31.143+0800","caller":"service/cleaning_service.go:135","msg":"数据清洗成功","cleaned_rows":18,"removed_rows":2}
+{"level":"INFO","time":"2026-03-13T14:08:31.143+0800","caller":"service/cleaning_service.go:141","msg":"步骤3: 保存清洗后的数据"}
+{"level":"INFO","time":"2026-03-13T14:08:31.143+0800","caller":"service/cleaning_service.go:216","msg":"保存清洗后的数据","path":"./data/output.csv"}
+{"level":"INFO","time":"2026-03-13T14:08:31.144+0800","caller":"service/cleaning_service.go:237","msg":"数据保存成功"}
+{"level":"INFO","time":"2026-03-13T14:08:31.144+0800","caller":"service/cleaning_service.go:156","msg":"步骤5: 生成清洗报告"}
+{"level":"INFO","time":"2026-03-13T14:08:31.144+0800","caller":"reporter/report_generator.go:73","msg":"开始生成清洗报告"}
+{"level":"INFO","time":"2026-03-13T14:08:31.144+0800","caller":"reporter/report_generator.go:120","msg":"清洗报告生成完成","report_path":"./data/report.json"}
+{"level":"INFO","time":"2026-03-13T14:08:31.144+0800","caller":"reporter/report_generator.go:265","msg":"保存清洗报告","path":"./data/report.json"}
+{"level":"INFO","time":"2026-03-13T14:08:31.145+0800","caller":"reporter/report_generator.go:285","msg":"清洗报告保存成功"}
+{"level":"INFO","time":"2026-03-13T14:08:31.146+0800","caller":"service/cleaning_service.go:179","msg":"数据清洗任务完成","total_time":0.0053467}
+{"level":"INFO","time":"2026-03-13T14:08:31.146+0800","caller":"service/cleaning_service.go:185","msg":"CSV模式下任务完成，退出服务"}
+{"level":"INFO","time":"2026-03-13T14:08:31.146+0800","caller":"service/cleaning_service.go:88","msg":"停止数据清洗服务"}
+{"level":"INFO","time":"2026-03-13T14:08:31.146+0800","caller":"service/cleaning_service.go:104","msg":"数据清洗服务已停止"}
+{"level":"INFO","time":"2026-03-13T14:08:34.478+0800","caller":"service/cleaning_service.go:88","msg":"停止数据清洗服务"}
