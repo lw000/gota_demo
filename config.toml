@@ -11,14 +11,14 @@ report_path = "./data/report.json"
 
 # CSV数据源
 [data.csv]
-enabled = true
+enabled = false
 input_path = "./data/input.csv"
 
 # Kafka数据源
 [data.kafka]
-enabled = false
-brokers = ["localhost:9092"]
-topic = "raw_data"
+enabled = true
+brokers = ["172.31.254.89:9092","172.31.254.89:9096","172.31.254.89:9097"]
+topic = "test-topic-1"
 consumer_group = "data_cleaning_group"
 batch_size = 100
 batch_timeout_ms = 5000
@@ -31,9 +31,12 @@ sasl_password = ""
 ssl_ca_location = ""
 ssl_key_location = ""
 ssl_certificate_location = ""
-security_protocol = ""  # PLAINTEXT, SASL_SSL, SSL
-sasl_mechanism = ""     # PLAIN, SCRAM-SHA-256, SCRAM-SHA-512
-ssl_endpoint_identification_algorithm = ""  # none, https
+# 安全协议选项: PLAINTEXT(无加密), SASL_SSL(SASL认证+SSL加密), SSL(仅SSL加密)
+security_protocol = ""
+# SASL认证机制: PLAIN, SCRAM-SHA-256, SCRAM-SHA-512
+sasl_mechanism = ""
+# SSL主机名验证: none(跳过验证), https(验证主机名)
+ssl_endpoint_identification_algorithm = ""
 
 # Kafka输出配置（可选）
 [data.kafka_output]
@@ -48,8 +51,11 @@ sasl_password = ""
 ssl_ca_location = ""
 ssl_key_location = ""
 ssl_certificate_location = ""
+# 安全协议选项: PLAINTEXT, SASL_SSL, SSL
 security_protocol = ""
+# SASL认证机制: PLAIN, SCRAM-SHA-256, SCRAM-SHA-512
 sasl_mechanism = ""
+# SSL主机名验证: none, https
 ssl_endpoint_identification_algorithm = ""
 
 # 清洗规则配置
@@ -67,7 +73,7 @@ max = 120
 
 # 日志配置
 [logging]
-level = "info"  # debug|info|warn|error
+level = "debug"  # debug|info|warn|error
 file_path = "./logs/service.log"
 max_size_mb = 100
 max_backups = 3

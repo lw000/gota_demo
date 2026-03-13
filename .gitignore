@@ -1,0 +1,5 @@
+data-cleaning-service.exe
+data/output.csv
+data/report.json
+config.toml
+logs/service.log

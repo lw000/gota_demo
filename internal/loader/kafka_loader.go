@@ -18,10 +18,7 @@ import (
 )
 
 // KafkaMessageData Kafka消息数据结构
-type KafkaMessageData struct {
-	Data     map[string]interface{} `json:"data"`
-	Metadata map[string]interface{} `json:"metadata,omitempty"`
-}
+type KafkaMessageData = map[string]interface{}
 
 // KafkaLoader Kafka数据加载器
 type KafkaLoader struct {
@@ -86,7 +83,7 @@ func (l *KafkaLoader) Load() (dataframe.DataFrame, error) {
 				continue
 			}
 
-			batch = append(batch, kafkaMsg.Data)
+			batch = append(batch, kafkaMsg)
 			messagesConsumed++
 
 			// 达到批次大小
