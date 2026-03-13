@@ -2,16 +2,18 @@
 
 ## 项目概述
 
-基于Go语言开发的数据清洗服务，支持CSV文件和Kafka数据源，提供数据清洗、报告生成等功能。
+基于Go语言开发的Kafka数据清洗服务，支持持续消费Kafka主题数据，进行数据清洗，并输出到分割的CSV文件中。
 
 ## 已实现功能
 
 ### ✅ 核心功能
 
-1. **多数据源支持**
-   - ✅ CSV文件加载
-   - ✅ Kafka流式数据消费
-   - ✅ 可扩展的数据加载器接口
+1. **Kafka持续消费**
+   - ✅ 实时消费Kafka主题数据
+   - ✅ 批量处理机制（可配置批次大小和超时）
+   - ✅ 消费者组支持
+   - ✅ 自动提交offset
+   - ✅ 完整的Kafka安全配置支持
 
 2. **数据清洗功能**
    - ✅ 去除重复数据
@@ -20,28 +22,23 @@
    - ✅ 字符串规范化（去空格、转小写）
    - 🔲 缺失值填充（均值、零值、自定义值）- 框架已建立，待实现
 
-3. **日志记录**
+3. **CSV文件输出**
+   - ✅ 自动分割文件（可配置每文件最大行数）
+   - ✅ 列名按字典序排序，确保数据一致性
+   - ✅ 文件命名规则：{topic}_{timestamp}.csv
+   - ✅ 支持大量数据持续写入
+
+4. **日志记录**
    - ✅ 基于uber-go/zap的高性能结构化日志
    - ✅ 支持多种日志级别（Debug/Info/Warn/Error）
    - ✅ 日志文件自动轮转
    - ✅ 同时输出到文件和控制台
 
-4. **清洗报告**
-   - ✅ JSON格式详细报告
-   - ✅ 清洗前后数据对比
-   - ✅ 操作记录追踪
-   - ✅ 数据质量指标
-   - ✅ 列级统计信息
-
-5. **Kafka支持**
-   - ✅ Kafka消费者（数据输入）
-   - ✅ Kafka生产者（数据输出）
-   - ✅ 批量数据处理
+5. **Kafka安全支持**
    - ✅ SASL认证（PLAIN, SCRAM-SHA-256, SCRAM-SHA-512）
    - ✅ SSL/TLS加密
    - ✅ 双向证书认证
-   - ✅ 消费者组支持
-   - ✅ 自动提交offset
+   - ✅ 完整的安全配置选项
 
 ## 项目结构
 
@@ -51,23 +48,17 @@ data-cleaning-service/
 ├── internal/
 │   ├── config/config.go             # 配置管理（TOML）
 │   ├── loader/
-│   │   ├── csv_loader.go           # CSV加载器
-│   │   ├── kafka_loader.go         # Kafka加载器
-│   │   └── batch_loader.go         # 批量加载器
+│   │   └── kafka_loader.go         # Kafka加载器
 │   ├── cleaner/data_cleaner.go      # 数据清洗器
-│   ├── reporter/
-│   │   └── report_generator.go     # 报告生成器
 │   └── service/
 │       └── cleaning_service.go     # 服务核心逻辑
 ├── pkg/
 │   ├── logger/logger.go             # 日志封装
 │   └── kafka/
-│       ├── consumer.go             # Kafka消费者
-│       └── producer.go             # Kafka生产者
-├── data/                         # 数据目录
-│   ├── input.csv                 # 示例输入数据
-│   ├── output.csv                # 输出数据
-│   └── report.json              # 清洗报告
+│       └── consumer.go             # Kafka消费者
+├── data/                         # 数据输出目录
+│   ├── test-topic-1_1710345600.csv # 输出CSV文件
+│   └── ...                       # 更多分割文件
 ├── logs/                         # 日志目录
 ├── config.toml                   # 配置文件
 ├── build.bat                     # Windows编译脚本
@@ -90,25 +81,25 @@ data-cleaning-service/
 
 ## 配置说明
 
-### 数据源配置
+### Kafka数据源配置（必须启用）
 
-#### CSV模式
-```toml
-[data.csv]
-enabled = true
-input_path = "./data/input.csv"
-```
-
-#### Kafka模式
 ```toml
 [data.kafka]
-enabled = false
+enabled = true
 brokers = ["localhost:9092"]
 topic = "raw_data"
 consumer_group = "data_cleaning_group"
-batch_size = 100
-batch_timeout_ms = 5000
-auto_commit = true
+batch_size = 100              # 每批次处理的消息数
+batch_timeout_ms = 5000        # 批次超时时间（毫秒）
+auto_commit = true             # 自动提交offset
+```
+
+### 输出文件配置
+
+```toml
+[data]
+output_dir = "./data"                    # 输出目录
+max_rows_per_file = 1000000              # 每个CSV文件最大行数
 ```
 
 ### Kafka安全配置
@@ -173,58 +164,34 @@ data-cleaning-service.exe -config config.toml
 
 ### 3. 查看结果
 
-- **清洗后的数据**: `./data/output.csv`
-- **清洗报告**: `./data/report.json`
+- **清洗后的数据**: `./data/{topic}_{timestamp}.csv`
 - **运行日志**: `./logs/service.log`
 
-## 清洗报告示例
+### 输出文件说明
+
+服务会持续消费Kafka数据并输出到CSV文件：
+- 文件命名: `{topic}_{timestamp}.csv`
+- 当单个文件达到 `max_rows_per_file` 行时自动创建新文件
+- 所有文件的列名按字典序排列，确保数据一致性
+
+### Kafka消息格式
+
+输入消息格式（扁平JSON）：
 
 ```json
 {
-  "timestamp": "2026-03-13T10:00:00Z",
-  "data_source": "csv",
-  "data_source_info": {
-    "type": "csv",
-    "file_path": "./data/input.csv",
-    "file_size": 1234,
-    "modified_time": "2026-03-13T09:00:00Z"
-  },
-  "cleaning_summary": {
-    "original_rows": 20,
-    "cleaned_rows": 17,
-    "removed_rows": 3,
-    "original_columns": 7,
-    "cleaned_columns": 7
-  },
-  "operations_performed": [
-    {
-      "operation": "remove_duplicates",
-      "affected_rows": 3,
-      "description": "去除重复行",
-      "timestamp": "2026-03-13T10:00:01Z"
-    }
-  ],
-  "data_quality": {
-    "completeness": 85.0,
-    "data_loss": 15.0
-  },
-  "statistics": {
-    "processing_time_ms": 150.5
-  },
-  "columns_info": [
-    {
-      "name": "id",
-      "type": "String",
-      "null_count": 0,
-      "unique": 17,
-      "statistics": {
-        "avg_length": 1.0,
-        "max_length": 2,
-        "count": 17
-      }
-    }
-  ]
+  "TAG_001": 111,
+  "TAG_002": 11.31,
+  "TAG_003": true
 }
+```
+
+### 输出CSV示例
+
+```csv
+TAG_001,TAG_002,TAG_003
+111,11.31,true
+222,22.62,false
 ```
 
 ## 已知问题和限制
@@ -361,6 +328,13 @@ sudo systemctl start data-cleaning
    - 加密日志存储
 
 ## 版本历史
+
+### v2.0.0 (2026-03-13)
+- ✅ 架构重构：移除CSV文件加载，专注Kafka持续消费
+- ✅ CSV文件自动分割：支持按最大行数分割文件
+- ✅ 列名字典序排序：确保数据一致性
+- ✅ 移除批量报告功能：改为持续消费模式
+- ✅ 简化项目结构：删除不必要文件
 
 ### v1.0.0 (2026-03-13)
 - ✅ 初始版本发布

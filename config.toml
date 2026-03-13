@@ -2,14 +2,15 @@
 [service]
 name = "DataCleaningService"
 display_name = "数据清洗服务"
-description = "CSV数据清洗服务"
+description = "Kafka数据清洗服务"
 
 # 数据源配置
 [data]
-output_path = "./data/output.csv"
+output_dir = "./data"
 report_path = "./data/report.json"
+max_rows_per_file = 1000000
 
-# CSV数据源
+# CSV数据源（已废弃，仅保留Kafka）
 [data.csv]
 enabled = false
 input_path = "./data/input.csv"

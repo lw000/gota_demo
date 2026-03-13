@@ -1,13 +1,14 @@
 # 数据清洗服务
 
-基于Go语言开发的数据清洗服务，支持CSV文件和Kafka数据源，提供数据清洗、报告生成等功能。
+基于Go语言开发的Kafka数据清洗服务，支持持续消费Kafka数据，进行数据清洗，并输出到CSV文件。
 
 ## 功能特性
 
-- **多数据源支持**
-  - CSV文件加载
-  - Kafka流式数据消费
-  - 可扩展支持其他数据源
+- **Kafka持续消费**
+  - 实时消费Kafka主题数据
+  - 批量处理机制
+  - 支持消费者组
+  - 自动提交offset
 
 - **数据清洗功能**
   - 去除重复数据
@@ -15,22 +16,20 @@
   - 数值范围校验
   - 字符串规范化
 
+- **CSV文件输出**
+  - 自动分割文件（可配置每文件最大行数）
+  - 列名按字典序排序，确保数据一致性
+  - 文件命名规则：{topic}_{timestamp}.csv
+
 - **日志记录**
   - 基于uber-go/zap的高性能结构化日志
   - 支持多种日志级别
   - 日志文件自动轮转
 
-- **清洗报告**
-  - JSON格式详细报告
-  - 清洗前后数据对比
-  - 操作记录追踪
-  - 数据质量指标
-
-- **Kafka支持**
+- **Kafka安全支持**
   - 支持SASL认证（PLAIN、SCRAM-SHA-256、SCRAM-SHA-512）
   - 支持SSL/TLS加密
   - 支持双向证书认证
-  - 支持消费者组
 
 ## 技术栈
 
@@ -51,22 +50,17 @@ data-cleaning-service/
 │   ├── config/
 │   │   └── config.go            # 配置管理
 │   ├── loader/
-│   │   ├── csv_loader.go        # CSV加载器
-│   │   ├── kafka_loader.go      # Kafka加载器
-│   │   └── batch_loader.go      # 批量加载器
+│   │   └── kafka_loader.go      # Kafka加载器
 │   ├── cleaner/
 │   │   └── data_cleaner.go      # 数据清洗器
-│   ├── reporter/
-│   │   └── report_generator.go  # 报告生成器
 │   └── service/
 │       └── cleaning_service.go  # 服务核心逻辑
 ├── pkg/
 │   ├── logger/
 │   │   └── logger.go            # 日志封装
 │   └── kafka/
-│       ├── consumer.go          # Kafka消费者
-│       └── producer.go          # Kafka生产者
-├── data/                        # 数据目录
+│       └── consumer.go          # Kafka消费者
+├── data/                        # 数据输出目录
 ├── logs/                        # 日志目录
 ├── config.toml                  # 配置文件
 └── README.md
@@ -85,17 +79,19 @@ go mod download
 编辑 `config.toml` 配置文件：
 
 ```toml
-# CSV模式配置
-[data.csv]
-enabled = true
-input_path = "./data/input.csv"
-
-# Kafka模式配置
+# Kafka配置
 [data.kafka]
-enabled = false
+enabled = true
 brokers = ["localhost:9092"]
-topic = "raw_data"
+topic = "your_topic"
 consumer_group = "data_cleaning_group"
+batch_size = 100
+batch_timeout_ms = 5000
+
+# 输出配置
+[data]
+output_dir = "./data"
+max_rows_per_file = 1000000
 ```
 
 ### 3. 运行服务
@@ -129,30 +125,30 @@ go build -o data-cleaning-service cmd/service/main.go
 [service]
 name = "DataCleaningService"
 display_name = "数据清洗服务"
-description = "CSV数据清洗服务"
+description = "Kafka数据清洗服务"
 ```
 
 ### 数据源配置
 
-#### CSV数据源
-
-```toml
-[data.csv]
-enabled = true
-input_path = "./data/input.csv"
-```
-
-#### Kafka数据源
+#### Kafka数据源（必须启用）
 
 ```toml
 [data.kafka]
-enabled = false
+enabled = true
 brokers = ["localhost:9092"]
 topic = "raw_data"
 consumer_group = "data_cleaning_group"
-batch_size = 100
-batch_timeout_ms = 5000
-auto_commit = true
+batch_size = 100              # 每批次处理的消息数
+batch_timeout_ms = 5000        # 批次超时时间（毫秒）
+auto_commit = true             # 自动提交offset
+```
+
+#### 输出文件配置
+
+```toml
+[data]
+output_dir = "./data"                    # 输出目录
+max_rows_per_file = 1000000              # 每个CSV文件最大行数
 ```
 
 #### Kafka安全配置
@@ -220,77 +216,50 @@ max_age_days = 30
 
 ## Kafka消息格式
 
-输入消息格式（JSON）：
+输入消息格式（扁平JSON）：
 
 ```json
 {
-  "data": {
-    "id": 1,
-    "name": "张三",
-    "age": 25,
-    "email": "zhangsan@example.com",
-    "salary": 8000,
-    "department": "研发部"
-  },
-  "metadata": {
-    "timestamp": "2026-03-13T10:00:00Z",
-    "source": "system_a"
-  }
+  "TAG_001": 111,
+  "TAG_002": 11.31,
+  "TAG_003": true
 }
 ```
 
-## 清洗报告示例
+## 输出文件说明
 
-```json
-{
-  "timestamp": "2026-03-13T10:00:00Z",
-  "data_source": "csv",
-  "data_source_info": {
-    "type": "csv",
-    "file_path": "./data/input.csv"
-  },
-  "cleaning_summary": {
-    "original_rows": 20,
-    "cleaned_rows": 17,
-    "removed_rows": 3,
-    "original_columns": 7,
-    "cleaned_columns": 7
-  },
-  "operations_performed": [
-    {
-      "operation": "remove_duplicates",
-      "affected_rows": 3,
-      "description": "去除重复行",
-      "timestamp": "2026-03-13T10:00:01Z"
-    }
-  ],
-  "data_quality": {
-    "completeness": 85.0,
-    "data_loss": 15.0
-  },
-  "statistics": {
-    "processing_time_ms": 150
-  }
-}
+### CSV文件命名规则
+
+- 格式: `{topic}_{timestamp}.csv`
+- 示例: `raw_data_1710345600.csv`
+- 时间戳: Unix时间戳（秒）
+
+### CSV文件分割
+
+- 当单个文件行数达到 `max_rows_per_file` 时，自动创建新文件
+- 新文件使用当前时间戳命名
+- 所有文件的列名按字典序排列，保证数据一致性
+
+### 输出示例
+
+假设topic为`test-topic-1`，输出文件如下：
+
+```
+data/
+├── test-topic-1_1710345600.csv  # 第一个文件（100万条）
+├── test-topic-1_1710346600.csv  # 第二个文件（100万条）
+└── test-topic-1_1710347600.csv  # 第三个文件（不满100万条）
+```
+
+CSV内容示例：
+```csv
+TAG_001,TAG_002,TAG_003
+111,11.31,true
+222,22.62,false
+333,33.93,true
 ```
 
 ## 开发说明
-
-### 添加新的数据源
-
-1. 实现 `DataLoader` 接口：
-
-```go
-type DataLoader interface {
-    Load() (dataframe.DataFrame, error)
-    Close() error
-    GetSourceInfo() map[string]interface{}
-}
-```
-
-2. 在 `config.go` 中添加配置结构
-
-3. 在 `batch_loader.go` 中添加数据源选择逻辑
 
 ### 添加新的清洗规则
 
