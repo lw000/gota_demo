@@ -16,7 +16,7 @@ go mod download
 [data.kafka]
 enabled = true
 brokers = ["localhost:9092"]
-topic = "your_topic"
+topics = ["your_topic", "another_topic"]  # 订阅多个主题
 consumer_group = "data_cleaning_group"
 batch_size = 100
 batch_timeout_ms = 5000
@@ -55,11 +55,23 @@ remove_duplicates = true              # 去除重复数据
 handle_missing_values = "delete"      # 删除包含缺失值的行
 string_normalization = true           # 字符串规范化
 
-# 数值范围校验
+# 全局数值范围校验（适用于所有主题）
 [[cleaning_rules.numeric_ranges]]
 column = "TAG_001"
 min = 0
 max = 1000
+
+# 主题专用数值范围校验（覆盖全局规则）
+[data.kafka.topic_rules]
+[data.kafka.topic_rules.your_topic]
+[[data.kafka.topic_rules.your_topic.numeric_ranges]]
+column = "TAG_001"
+min = 0
+max = 1000
+[[data.kafka.topic_rules.your_topic.numeric_ranges]]
+column = "TAG_002"
+min = 0.0
+max = 100.0
 ```
 
 ### 步骤5: 编译程序
@@ -93,17 +105,20 @@ run.bat
 
 1. **清洗后的数据**: `./data/{topic}_{timestamp}.csv`
    - 文件命名: `{topic}_{timestamp}.csv`
-   - 示例: `your_topic_1710345600.csv`
+   - 每个主题独立保存到不同的文件
+   - 示例: `your_topic_1710345600.csv`, `another_topic_1710345700.csv`
    - 当达到最大行数时自动创建新文件
 
 2. **运行日志**: `./logs/service.log`
 
 3. **监控日志输出**:
 ```
-INFO 开始持续消费Kafka数据 topic=your_topic max_rows_per_file=1000000
-INFO 创建新的CSV文件 path=./data/your_topic_1710345600.csv
-INFO 批次处理完成 rows=100 total_rows=100
-INFO 批次处理完成 rows=100 total_rows=200
+INFO 开始持续消费Kafka数据 topics=["your_topic", "another_topic"] max_rows_per_file=1000000
+INFO 创建新的CSV文件 topic=your_topic path=./data/your_topic_1710345600.csv
+INFO 批次处理完成 topic=your_topic rows=100 total_rows=100
+INFO 批次处理完成 topic=your_topic rows=100 total_rows=200
+INFO 创建新的CSV文件 topic=another_topic path=./data/another_topic_1710345700.csv
+INFO 批次处理完成 topic=another_topic rows=100 total_rows=100
 ...
 ```
 
@@ -150,32 +165,42 @@ go mod tidy
 
 ## 示例场景
 
-### 场景1: IoT传感器数据清洗
+### 场景1: 多主题IoT数据清洗
 
-持续消费传感器数据，进行清洗和存储。
+同时订阅多个传感器主题，进行清洗和存储。
 
 **配置：**
 ```toml
 [data.kafka]
 enabled = true
-topic = "sensor-data"
+topics = ["sensor-data", "gateway-data"]  # 订阅两个主题
 batch_size = 100
 
 [data]
 max_rows_per_file = 1000000
 
+# 全局清洗规则
 [cleaning_rules]
 remove_duplicates = true
 handle_missing_values = "delete"
 string_normalization = true
 
-[[cleaning_rules.numeric_ranges]]
+# sensor-data主题专用规则
+[data.kafka.topic_rules.sensor-data]
+[[data.kafka.topic_rules.sensor-data.numeric_ranges]]
 column = "temperature"
 min = -50
 max = 150
+
+# gateway-data主题专用规则
+[data.kafka.topic_rules.gateway-data]
+[[data.kafka.topic_rules.gateway-data.numeric_ranges]]
+column = "signal_strength"
+min = -100
+max = 0
 ```
 
-**Kafka消息：**
+**Kafka消息（sensor-data）：**
 ```json
 {
   "sensor_id": "S001",
@@ -185,11 +210,23 @@ max = 150
 }
 ```
 
+**Kafka消息（gateway-data）：**
+```json
+{
+  "gateway_id": "G001",
+  "signal_strength": -60,
+  "device_count": 10,
+  "timestamp": 1710345600
+}
+```
+
 **结果：**
-- 实时消费传感器数据
-- 去除重复和异常数据
-- 每100万条数据创建一个新文件
-- 列名按字典序排列（humidity, sensor_id, temperature, timestamp）
+- 同时消费两个主题的数据
+- 每个主题应用不同的数值范围校验
+- 两个主题的数据分别保存到独立文件：
+  - `sensor-data_1710345600.csv`
+  - `gateway-data_1710345700.csv`
+- 每100万条数据自动分割文件
 
 ### 场景2: 日志数据持续清洗
 
@@ -199,7 +236,7 @@ max = 150
 ```toml
 [data.kafka]
 enabled = true
-topic = "app-logs"
+topics = ["app-logs", "system-logs"]  # 同时订阅应用日志和系统日志
 batch_size = 500
 batch_timeout_ms = 10000
 
@@ -210,9 +247,16 @@ max_rows_per_file = 500000
 remove_duplicates = true
 handle_missing_values = "delete"
 string_normalization = true
+
+# app-logs主题专用规则
+[data.kafka.topic_rules.app-logs]
+[[data.kafka.topic_rules.app-logs.numeric_ranges]]
+column = "user_id"
+min = 1
+max = 999999
 ```
 
-**Kafka消息：**
+**Kafka消息（app-logs）：**
 ```json
 {
   "level": "INFO",
@@ -222,7 +266,20 @@ string_normalization = true
 }
 ```
 
+**Kafka消息（system-logs）：**
+```json
+{
+  "level": "ERROR",
+  "message": "Disk space low",
+  "disk_usage": 95.5,
+  "timestamp": 1710345600
+}
+```
+
 **结果：**
 - 批量处理日志数据（每500条或10秒）
 - 每个文件最多50万条记录
-- 自动分割文件便于管理
+- app-logs主题会校验user_id范围
+- 两个主题的数据分别存储：
+  - `app-logs_1710345600.csv`
+  - `system-logs_1710345700.csv`

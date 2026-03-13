@@ -12,14 +12,15 @@ import (
 // Producer Kafka生产者
 type Producer struct {
 	config   *config.KafkaConfig
+	topic    string
 	producer sarama.SyncProducer
 }
 
 // NewProducer 创建Kafka生产者
-func NewProducer(kafkaConfig *config.KafkaConfig) (*Producer, error) {
+func NewProducer(kafkaConfig *config.KafkaConfig, topic string) (*Producer, error) {
 	logger.Info("创建Kafka生产者",
 		zap.Strings("brokers", kafkaConfig.Brokers),
-		zap.String("topic", kafkaConfig.Topic),
+		zap.String("topic", topic),
 	)
 
 	// 创建Sarama配置
@@ -49,6 +50,7 @@ func NewProducer(kafkaConfig *config.KafkaConfig) (*Producer, error) {
 	logger.Info("Kafka生产者创建成功")
 	return &Producer{
 		config:   kafkaConfig,
+		topic:    topic,
 		producer: producer,
 	}, nil
 }
@@ -56,7 +58,7 @@ func NewProducer(kafkaConfig *config.KafkaConfig) (*Producer, error) {
 // SendMessage 发送消息
 func (p *Producer) SendMessage(key, value []byte) (partition int32, offset int64, err error) {
 	msg := &sarama.ProducerMessage{
-		Topic: p.config.Topic,
+		Topic: p.topic,
 		Key:   sarama.ByteEncoder(key),
 		Value: sarama.ByteEncoder(value),
 	}
@@ -64,14 +66,14 @@ func (p *Producer) SendMessage(key, value []byte) (partition int32, offset int64
 	partition, offset, err = p.producer.SendMessage(msg)
 	if err != nil {
 		logger.Error("发送Kafka消息失败",
-			zap.String("topic", p.config.Topic),
+			zap.String("topic", p.topic),
 			zap.Error(err),
 		)
 		return 0, 0, err
 	}
 
 	logger.Debug("Kafka消息发送成功",
-		zap.String("topic", p.config.Topic),
+		zap.String("topic", p.topic),
 		zap.Int32("partition", partition),
 		zap.Int64("offset", offset),
 	)

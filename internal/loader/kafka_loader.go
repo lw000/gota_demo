@@ -2,7 +2,6 @@ package loader
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strings"
 	"sync"
@@ -10,15 +9,11 @@ import (
 
 	"github.com/go-gota/gota/dataframe"
 	"github.com/go-gota/gota/series"
-	"github.com/IBM/sarama"
 	"data-cleaning-service/internal/config"
 	"data-cleaning-service/pkg/kafka"
 	"data-cleaning-service/pkg/logger"
 	"go.uber.org/zap"
 )
-
-// KafkaMessageData Kafka消息数据结构
-type KafkaMessageData = map[string]interface{}
 
 // KafkaLoader Kafka数据加载器
 type KafkaLoader struct {
@@ -26,14 +21,14 @@ type KafkaLoader struct {
 	consumer     *kafka.Consumer
 	batchSize    int
 	batchTimeout time.Duration
-	messages     chan *sarama.ConsumerMessage
+	messages     chan *kafka.KafkaMessageWithTopic
 }
 
 // NewKafkaLoader 创建Kafka加载器
 func NewKafkaLoader(kafkaConfig *config.KafkaConfig) (*KafkaLoader, error) {
 	logger.Info("创建Kafka加载器",
 		zap.Strings("brokers", kafkaConfig.Brokers),
-		zap.String("topic", kafkaConfig.Topic),
+		zap.Strings("topics", kafkaConfig.Topics),
 	)
 
 	consumer, err := kafka.NewConsumer(kafkaConfig)
@@ -46,7 +41,7 @@ func NewKafkaLoader(kafkaConfig *config.KafkaConfig) (*KafkaLoader, error) {
 		consumer:     consumer,
 		batchSize:    kafkaConfig.BatchSize,
 		batchTimeout: time.Duration(kafkaConfig.BatchTimeoutMS) * time.Millisecond,
-		messages:     make(chan *sarama.ConsumerMessage, 1000),
+		messages:     make(chan *kafka.KafkaMessageWithTopic, 1000),
 	}
 
 	// 启动消费者
@@ -58,13 +53,13 @@ func NewKafkaLoader(kafkaConfig *config.KafkaConfig) (*KafkaLoader, error) {
 }
 
 // Load 加载Kafka数据（批量）
-func (l *KafkaLoader) Load() (dataframe.DataFrame, error) {
+func (l *KafkaLoader) Load() (map[string]dataframe.DataFrame, error) {
 	logger.Info("开始批量加载Kafka数据",
 		zap.Int("batch_size", l.batchSize),
 	)
 
 	ctx := context.Background()
-	batch := make([]map[string]interface{}, 0, l.batchSize)
+	topicBatches := make(map[string][]KafkaMessageData)
 	timeout := time.After(l.batchTimeout)
 
 	startTime := time.Now()
@@ -72,38 +67,47 @@ func (l *KafkaLoader) Load() (dataframe.DataFrame, error) {
 
 	for {
 		select {
-		case msg := <-l.messages:
-			// 解析消息
-			var kafkaMsg KafkaMessageData
-			if err := json.Unmarshal(msg.Value, &kafkaMsg); err != nil {
-				logger.Error("解析Kafka消息失败",
-					zap.Error(err),
-					zap.String("message", string(msg.Value)),
-				)
-				continue
+		case msgWithTopic := <-l.messages:
+			topic := msgWithTopic.Topic
+
+			// 初始化主题批次
+			if _, exists := topicBatches[topic]; !exists {
+				topicBatches[topic] = make([]KafkaMessageData, 0, l.batchSize)
 			}
 
-			batch = append(batch, kafkaMsg)
+			// 添加消息到对应主题批次
+			topicBatches[topic] = append(topicBatches[topic], msgWithTopic.Data)
 			messagesConsumed++
 
+			// 检查所有主题的总消息数是否达到批次大小
+			totalMessages := 0
+			for _, batch := range topicBatches {
+				totalMessages += len(batch)
+			}
+
 			// 达到批次大小
-			if len(batch) >= l.batchSize {
+			if totalMessages >= l.batchSize {
 				logger.Info("达到批次大小，停止加载",
-					zap.Int("batch_size", len(batch)),
+					zap.Int("total_messages", totalMessages),
 					zap.Int("messages_consumed", messagesConsumed),
 				)
 				goto PROCESS
 			}
 
 		case <-timeout:
-			if len(batch) > 0 {
+			totalMessages := 0
+			for _, batch := range topicBatches {
+				totalMessages += len(batch)
+			}
+
+			if totalMessages > 0 {
 				logger.Info("批次超时，停止加载",
-					zap.Int("batch_size", len(batch)),
+					zap.Int("total_messages", totalMessages),
 					zap.Int("messages_consumed", messagesConsumed),
 				)
 				goto PROCESS
 			}
-			
+
 			// 如果超时但还没有数据，继续等待
 			logger.Warn("批次超时但无数据，继续等待")
 			timeout = time.After(l.batchTimeout)
@@ -115,29 +119,38 @@ func (l *KafkaLoader) Load() (dataframe.DataFrame, error) {
 	}
 
 PROCESS:
-	if len(batch) == 0 {
-		return dataframe.DataFrame{}, fmt.Errorf("no data received from kafka")
+	if len(topicBatches) == 0 {
+		return nil, fmt.Errorf("no data received from kafka")
 	}
 
-	// 将批次数据转换为DataFrame
-	df, err := l.batchToDataFrame(batch)
-	if err != nil {
-		return dataframe.DataFrame{}, fmt.Errorf("failed to convert batch to dataframe: %w", err)
+	// 将各主题批次数据转换为DataFrame
+	result := make(map[string]dataframe.DataFrame)
+	for topic, batch := range topicBatches {
+		df, err := l.batchToDataFrame(batch)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert topic %s batch to dataframe: %w", topic, err)
+		}
+		result[topic] = df
 	}
 
 	duration := time.Since(startTime)
+	totalRows := 0
+	for _, df := range result {
+		totalRows += df.Nrow()
+	}
+
 	logger.Info("Kafka数据加载完成",
-		zap.Int("rows", df.Nrow()),
-		zap.Int("columns", df.Ncol()),
+		zap.Int("topics", len(result)),
+		zap.Int("total_rows", totalRows),
 		zap.Int("messages_consumed", messagesConsumed),
 		zap.Duration("duration", duration),
 	)
 
-	return df, nil
+	return result, nil
 }
 
 // batchToDataFrame 将批次数据转换为DataFrame
-func (l *KafkaLoader) batchToDataFrame(batch []map[string]interface{}) (dataframe.DataFrame, error) {
+func (l *KafkaLoader) batchToDataFrame(batch []KafkaMessageData) (dataframe.DataFrame, error) {
 	if len(batch) == 0 {
 		return dataframe.DataFrame{}, nil
 	}
@@ -177,7 +190,7 @@ func (l *KafkaLoader) batchToDataFrame(batch []map[string]interface{}) (datafram
 }
 
 // LoadWithCallback 加载Kafka数据并使用回调处理
-func (l *KafkaLoader) LoadWithCallback(callback func(dataframe.DataFrame) error, maxBatches int) error {
+func (l *KafkaLoader) LoadWithCallback(callback func(map[string]dataframe.DataFrame) error, maxBatches int) error {
 	logger.Info("开始加载Kafka数据（回调模式）",
 		zap.Int("max_batches", maxBatches),
 	)
@@ -193,7 +206,7 @@ func (l *KafkaLoader) LoadWithCallback(callback func(dataframe.DataFrame) error,
 			break
 		}
 
-		df, err := l.Load()
+		dfMap, err := l.Load()
 		if err != nil {
 			logger.Error("加载数据失败", zap.Error(err))
 			if strings.Contains(err.Error(), "no data received") {
@@ -207,12 +220,12 @@ func (l *KafkaLoader) LoadWithCallback(callback func(dataframe.DataFrame) error,
 
 		// 异步处理批次
 		wg.Add(1)
-		go func(batchDF dataframe.DataFrame) {
+		go func(batchDFMap map[string]dataframe.DataFrame) {
 			defer wg.Done()
-			if err := callback(batchDF); err != nil {
+			if err := callback(batchDFMap); err != nil {
 				logger.Error("处理批次失败", zap.Error(err))
 			}
-		}(df)
+		}(dfMap)
 	}
 
 	// 等待所有批次处理完成
@@ -239,7 +252,7 @@ func (l *KafkaLoader) GetSourceInfo() map[string]interface{} {
 	return map[string]interface{}{
 		"type":           "kafka",
 		"brokers":        l.config.Brokers,
-		"topic":          l.config.Topic,
+		"topics":         l.config.Topics,
 		"consumer_group": l.config.ConsumerGroup,
 		"batch_size":     l.batchSize,
 		"batch_timeout":  l.batchTimeout.Milliseconds(),

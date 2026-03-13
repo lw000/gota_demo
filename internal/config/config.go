@@ -40,14 +40,20 @@ type CSVConfig struct {
 
 // KafkaConfig Kafka配置
 type KafkaConfig struct {
-	Enabled     bool          `toml:"enabled"`
-	Brokers     []string      `toml:"brokers"`
-	Topic       string        `toml:"topic"`
-	ConsumerGroup string      `toml:"consumer_group"`
-	BatchSize   int           `toml:"batch_size"`
-	BatchTimeoutMS int        `toml:"batch_timeout_ms"`
-	AutoCommit  bool          `toml:"auto_commit"`
-	Security    KafkaSecurity `toml:"security"`
+	Enabled        bool                    `toml:"enabled"`
+	Brokers        []string                `toml:"brokers"`
+	Topics         []string                `toml:"topics"`
+	ConsumerGroup  string                  `toml:"consumer_group"`
+	BatchSize      int                     `toml:"batch_size"`
+	BatchTimeoutMS int                     `toml:"batch_timeout_ms"`
+	AutoCommit     bool                    `toml:"auto_commit"`
+	Security       KafkaSecurity           `toml:"security"`
+	TopicRules     map[string]TopicRule    `toml:"topic_rules"`
+}
+
+// TopicRule 主题专用清洗规则
+type TopicRule struct {
+	NumericRanges []NumericRange `toml:"numeric_ranges"`
 }
 
 // KafkaSecurity Kafka安全配置
@@ -143,8 +149,8 @@ func validateConfig(cfg *Config) error {
 	if len(cfg.Data.Kafka.Brokers) == 0 {
 		return fmt.Errorf("kafka brokers cannot be empty")
 	}
-	if cfg.Data.Kafka.Topic == "" {
-		return fmt.Errorf("kafka topic cannot be empty")
+	if len(cfg.Data.Kafka.Topics) == 0 {
+		return fmt.Errorf("kafka topics cannot be empty")
 	}
 	if cfg.Data.Kafka.ConsumerGroup == "" {
 		return fmt.Errorf("kafka consumer group cannot be empty")

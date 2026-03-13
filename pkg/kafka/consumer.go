@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/json"
 	"fmt"
 	"os"
 	"time"
@@ -13,6 +14,16 @@ import (
 	"data-cleaning-service/pkg/logger"
 	"go.uber.org/zap"
 )
+
+// KafkaMessageData Kafka消息数据结构
+type KafkaMessageData = map[string]interface{}
+
+// KafkaMessageWithTopic 带有主题信息的Kafka消息
+type KafkaMessageWithTopic struct {
+	Topic  string
+	Data   KafkaMessageData
+	Offset int64
+}
 
 // Consumer Kafka消费者
 type Consumer struct {
@@ -25,7 +36,7 @@ type Consumer struct {
 
 // ConsumerHandler 消费者处理器
 type ConsumerHandler struct {
-	messages chan<- *sarama.ConsumerMessage
+	messages chan<- *KafkaMessageWithTopic
 	logger   *zap.Logger
 }
 
@@ -33,7 +44,7 @@ type ConsumerHandler struct {
 func NewConsumer(kafkaConfig *config.KafkaConfig) (*Consumer, error) {
 	logger.Info("创建Kafka消费者",
 		zap.Strings("brokers", kafkaConfig.Brokers),
-		zap.String("topic", kafkaConfig.Topic),
+		zap.Strings("topics", kafkaConfig.Topics),
 		zap.String("group", kafkaConfig.ConsumerGroup),
 	)
 
@@ -166,7 +177,7 @@ func configureTLS(config *sarama.Config, security *config.KafkaSecurity) error {
 }
 
 // Start 开始消费
-func (c *Consumer) Start(messages chan<- *sarama.ConsumerMessage) error {
+func (c *Consumer) Start(messages chan<- *KafkaMessageWithTopic) error {
 	c.handler = &ConsumerHandler{
 		messages: messages,
 		logger:   logger.With(zap.String("component", "kafka_consumer")),
@@ -179,7 +190,7 @@ func (c *Consumer) Start(messages chan<- *sarama.ConsumerMessage) error {
 				logger.Info("停止消费Kafka消息")
 				return
 			default:
-				if err := c.group.Consume(c.ctx, []string{c.config.Topic}, c.handler); err != nil {
+				if err := c.group.Consume(c.ctx, c.config.Topics, c.handler); err != nil {
 					logger.Error("消费错误", zap.Error(err))
 					// 等待一段时间后重试
 					time.Sleep(5 * time.Second)
@@ -222,11 +233,30 @@ func (h *ConsumerHandler) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 			if !ok {
 				return nil
 			}
+
+			// 解析消息数据
+			var kafkaMsg KafkaMessageData
+			if err := json.Unmarshal(msg.Value, &kafkaMsg); err != nil {
+				logger.Error("解析Kafka消息失败",
+					zap.Error(err),
+					zap.String("topic", msg.Topic),
+					zap.Int32("partition", msg.Partition),
+					zap.Int64("offset", msg.Offset),
+					zap.String("message", string(msg.Value)),
+				)
+				// 继续处理下一条消息，不返回错误
+				continue
+			}
+
 			// 发送消息到通道
-			h.messages <- msg
+			h.messages <- &KafkaMessageWithTopic{
+				Topic:  msg.Topic,
+				Data:   kafkaMsg,
+				Offset: msg.Offset,
+			}
 			// 标记消息已处理
 			session.MarkMessage(msg, "")
-			
+
 			logger.Debug("接收到Kafka消息",
 				zap.String("topic", msg.Topic),
 				zap.Int32("partition", msg.Partition),

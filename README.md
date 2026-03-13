@@ -4,6 +4,12 @@
 
 ## 功能特性
 
+- **多主题订阅**
+  - 同时订阅多个Kafka主题
+  - 每个主题独立处理和存储
+  - 支持主题专用清洗规则
+  - 共享基础清洗规则
+
 - **Kafka持续消费**
   - 实时消费Kafka主题数据
   - 批量处理机制
@@ -13,11 +19,12 @@
 - **数据清洗功能**
   - 去除重复数据
   - 缺失值处理（删除/填充）
-  - 数值范围校验
+  - 数值范围校验（支持全局和主题专用规则）
   - 字符串规范化
 
 - **CSV文件输出**
   - 自动分割文件（可配置每文件最大行数）
+  - 按主题分别存储
   - 列名按字典序排序，确保数据一致性
   - 文件命名规则：{topic}_{timestamp}.csv
 
@@ -83,7 +90,7 @@ go mod download
 [data.kafka]
 enabled = true
 brokers = ["localhost:9092"]
-topic = "your_topic"
+topics = ["your_topic", "another_topic"]  # 订阅多个主题
 consumer_group = "data_cleaning_group"
 batch_size = 100
 batch_timeout_ms = 5000
@@ -136,11 +143,31 @@ description = "Kafka数据清洗服务"
 [data.kafka]
 enabled = true
 brokers = ["localhost:9092"]
-topic = "raw_data"
+topics = ["raw_data", "sensor_data"]  # 订阅多个主题
 consumer_group = "data_cleaning_group"
 batch_size = 100              # 每批次处理的消息数
 batch_timeout_ms = 5000        # 批次超时时间（毫秒）
 auto_commit = true             # 自动提交offset
+```
+
+#### 主题专用清洗规则（可选）
+
+为特定主题配置专用的数值范围校验规则，会覆盖全局规则：
+
+```toml
+# 主题专用数值范围校验
+[data.kafka.topic_rules]
+[data.kafka.topic_rules.raw_data]
+[[data.kafka.topic_rules.raw_data.numeric_ranges]]
+column = "TAG_001"
+min = 0
+max = 1000
+
+[data.kafka.topic_rules.sensor_data]
+[[data.kafka.topic_rules.sensor_data.numeric_ranges]]
+column = "temperature"
+min = -50
+max = 150
 ```
 
 #### 输出文件配置
@@ -190,6 +217,8 @@ ssl_endpoint_identification_algorithm = "https"
 
 ### 清洗规则配置
 
+**全局清洗规则（适用于所有主题）：**
+
 ```toml
 [cleaning_rules]
 remove_duplicates = true
@@ -197,11 +226,16 @@ handle_missing_values = "delete"  # delete|fill_mean|fill_zero|fill_custom
 date_format = "2006-01-02"
 string_normalization = true
 
+# 全局数值范围校验
 [[cleaning_rules.numeric_ranges]]
 column = "age"
 min = 0
 max = 120
 ```
+
+**主题专用规则（覆盖全局规则）：**
+
+参见上方"主题专用清洗规则"部分。
 
 ### 日志配置
 
@@ -228,27 +262,29 @@ max_age_days = 30
 
 ## 输出文件说明
 
-### CSV文件命名规则
+#### CSV文件命名规则
 
 - 格式: `{topic}_{timestamp}.csv`
 - 示例: `raw_data_1710345600.csv`
 - 时间戳: Unix时间戳（秒）
 
-### CSV文件分割
+#### CSV文件分割
 
 - 当单个文件行数达到 `max_rows_per_file` 时，自动创建新文件
 - 新文件使用当前时间戳命名
 - 所有文件的列名按字典序排列，保证数据一致性
+- 每个主题独立维护CSV写入器
 
-### 输出示例
+#### 输出示例
 
-假设topic为`test-topic-1`，输出文件如下：
+订阅多个主题时的输出结构：
 
 ```
 data/
-├── test-topic-1_1710345600.csv  # 第一个文件（100万条）
-├── test-topic-1_1710346600.csv  # 第二个文件（100万条）
-└── test-topic-1_1710347600.csv  # 第三个文件（不满100万条）
+├── raw_data_1710345600.csv        # raw_data主题第一个文件（100万条）
+├── raw_data_1710346600.csv        # raw_data主题第二个文件（100万条）
+├── sensor_data_1710345700.csv     # sensor_data主题第一个文件（100万条）
+└── sensor_data_1710346800.csv     # sensor_data主题第二个文件（100万条）
 ```
 
 CSV内容示例：

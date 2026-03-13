@@ -19,7 +19,7 @@ input_path = "./data/input.csv"
 [data.kafka]
 enabled = true
 brokers = ["172.31.254.89:9092","172.31.254.89:9096","172.31.254.89:9097"]
-topic = "test-topic-1"
+topics = ["test-topic-1","test-topic-2","test-topic-3"]
 consumer_group = "data_cleaning_group"
 batch_size = 100
 batch_timeout_ms = 5000
@@ -43,7 +43,11 @@ ssl_endpoint_identification_algorithm = ""
 [data.kafka_output]
 enabled = false
 brokers = ["localhost:9092"]
-topic = "cleaned_data"
+topics = ["cleaned_data"]
+consumer_group = "data_output_group"
+batch_size = 100
+batch_timeout_ms = 5000
+auto_commit = true
 
 # Kafka输出安全配置
 [data.kafka_output.security]
@@ -66,11 +70,23 @@ handle_missing_values = "delete"  # delete|fill_mean|fill_zero|fill_custom
 date_format = "2006-01-02"
 string_normalization = true
 
-# 数值范围校验
+# 数值范围校验（默认规则，适用于所有主题）
 [[cleaning_rules.numeric_ranges]]
 column = "age"
 min = 0
 max = 120
+
+# 主题专用数值范围校验（覆盖默认规则）
+[data.kafka.topic_rules]
+[data.kafka.topic_rules.test-topic-1]
+[[data.kafka.topic_rules.test-topic-1.numeric_ranges]]
+column = "TAG_001"
+min = 0
+max = 1000
+[[data.kafka.topic_rules.test-topic-1.numeric_ranges]]
+column = "TAG_002"
+min = 0.0
+max = 100.0
 
 # 日志配置
 [logging]
